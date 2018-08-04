@@ -41,11 +41,9 @@ function checkOrder(product, quantity) {
         if (err) throw err;
         var stock = parseInt(res[0].stock_quantity);
         var price = parseInt(res[0].price)
-        // console.log("Stock is " + stock);
-        // console.log("Quantity is " + quantity);
         if (stock <= quantity) {
-            console.log("Insufficient Quantity!")
-            connection.end();
+            console.log("Insufficient Quantity!");
+            menuOptions();
         } else {
             buyProduct(product, quantity, stock, price);
         }
@@ -55,13 +53,32 @@ function checkOrder(product, quantity) {
 function buyProduct(product, quantity, stock, price) {
     var newQuantity = stock - quantity;
     var queryString = "UPDATE products SET stock_quantity = " + newQuantity + " WHERE item_id =" + product;
-    console.log(queryString);
     connection.query(queryString, function(err, res){
         if (err) throw err;
         var cost = quantity * price;
         console.log("Order Complete! Total cost of purchase is: " + cost);
-        connection.end();
+        menuOptions();
     })
+}
+
+function menuOptions() {
+    inquirer.prompt([
+        {
+            type: "confirm",
+            message: "Would you like to make another purchase?",
+            name: "restart"
+        }
+    ]).then(function(res){
+        if (res.restart) {
+            displayItems();
+        } else {
+            exit();
+        }
+    })
+}
+
+function exit() {
+    connection.end();
 }
 
 function displayItems() {
